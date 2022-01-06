@@ -88,7 +88,7 @@ with mp_face_mesh.FaceMesh(
         xText = thresholds.xRatioToText(xRatio)
             
         yRatio = getYRatio(face_landmarks,xText)
-        yText = thresholds.yRatioToText(yRatio)
+        yText = thresholds.yRatioToText(yRatio,xText)
         
         
         if(yTiltRatio >= 0.045):
@@ -134,4 +134,5 @@ with mp_face_mesh.FaceMesh(
     elif k == ord('d'):
         thresholds.calibrate(ratioList)
         print(thresholds.left,thresholds.right)
+        ratioList.clear()
 cap.release()

@@ -1,18 +1,26 @@
 class ThresholdValue():
-    def __init__(self,left=7.3,right=6.7,upper= 3,lower=2.55):
+    def __init__(self,left=7.3,right=6.7,top= 3,bottom=2.55):
         self.left = left
         self.right = right
-        self.upper =  upper
-        self.lower = lower
+        self.top =  top
+        self.bottom = bottom
         self.ratioList = []
-        
+        self.topL = 3
+        self.midL   = 0
+        self.bottomL = 2.55
+        self.topM = 3
+        self.midM   = 0
+        self.bottomM = 2.55
+        self.topR = 3
+        self.midR   = 0
+        self.bottomR = 2.55
         #RatioList Index
         # 0 Top Left
         # 1 Top Mid
         # 2 Top Right
-        # 3 Lower Left
-        # 4 Lower Mid
-        # 5 Lower Right 
+        # 3 bottom Left
+        # 4 bottom Mid
+        # 5 bottom Right 
         # 6 Mid Mid
         # 7 Mid Left
         # 8 Mid Right
@@ -29,9 +37,20 @@ class ThresholdValue():
         
         self.left = (averageMidX + averageLeft)/2
         self.right = (averageMidX + averageRight)/2
-        self.upper = (averageMidY + averageTop)/2
-        self.lower = (averageMidY + averageBottom)/2
+        self.top = (averageMidY + averageTop)/2
+        self.bottom = (averageMidY + averageBottom)/2
         
+        
+        #y calibrate v2
+        self.topL = (ratioList[0][1] + ratioList[7][1])/2
+        self.midL   = ratioList[7][1]
+        self.bottomL = (ratioList[3][1] + ratioList[7][1])/2
+        self.topM = (ratioList[1][1] + ratioList[6][1])/2
+        self.midM   = ratioList[6][1]
+        self.bottomM = (ratioList[4][1] + ratioList[6][1])/2
+        self.topR = (ratioList[2][1] + ratioList[8][1])/2
+        self.midR   = ratioList[8][1]
+        self.bottomR = (ratioList[5][1] + ratioList[8][1])/2
         
         
     def xRatioToText(self,xRatio):
@@ -43,10 +62,21 @@ class ThresholdValue():
             xText = "right"
         return xText
     
-    def yRatioToText(self,yRatio):
-        if(yRatio >= self.upper):
+    def yRatioToText(self,yRatio,xText):
+        
+        if xText == "left":
+            topThres = self.topL
+            bottomThres = self.bottomL
+        elif xText == "mid":
+            topThres = self.topM
+            bottomThres = self.bottomM
+        elif xText == "right":
+            topThres = self.topR
+            bottomThres = self.bottomR
+            
+        if(yRatio >= topThres):
             yText ="Top"
-        elif(self.upper>yRatio> self.lower):
+        elif(topThres>yRatio> bottomThres):
             yText = "mid"
         else:
             yText = "Bottom"
