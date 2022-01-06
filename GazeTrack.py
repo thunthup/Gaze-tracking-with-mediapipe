@@ -6,7 +6,7 @@ from ThresholdValue import ThresholdValue
 mp_drawing = mp.solutions.drawing_utils
 mp_drawing_styles = mp.solutions.drawing_styles
 mp_face_mesh = mp.solutions.face_mesh
-
+ratioList = []
 thresholds = ThresholdValue()
 
 def calibrate():
@@ -14,7 +14,23 @@ def calibrate():
     RatioList = []
     cv2.waitKey(0)
     RatioList.append([getXRatio(),getYRatio()])
-    
+    cv2.waitKey(0)
+    RatioList.append([getXRatio(),getYRatio()])
+    cv2.waitKey(0)
+    RatioList.append([getXRatio(),getYRatio()])
+    cv2.waitKey(0)
+    RatioList.append([getXRatio(),getYRatio()])
+    cv2.waitKey(0)
+    RatioList.append([getXRatio(),getYRatio()])
+    cv2.waitKey(0)
+    RatioList.append([getXRatio(),getYRatio()])
+    cv2.waitKey(0)
+    RatioList.append([getXRatio(),getYRatio()])
+    cv2.waitKey(0)
+    RatioList.append([getXRatio(),getYRatio()])
+    cv2.waitKey(0)
+    RatioList.append([getXRatio(),getYRatio()])
+    return RatioList
     
     
 drawing_spec = mp_drawing.DrawingSpec(thickness=1, circle_radius=1)
@@ -112,5 +128,10 @@ with mp_face_mesh.FaceMesh(
     elif k == ord('z'):
         print(face_landmarks.landmark[73])
         print(face_landmarks.landmark[68])
-    
+    elif k == ord('c'):
+        xTextList = ["left","mid","right","left","mid","right","mid","left","right"]
+        ratioList.append([getXRatio(face_landmarks),getYRatio(face_landmarks,xTextList[len(ratioList)])])
+    elif k == ord('d'):
+        thresholds.calibrate(ratioList)
+        print(thresholds.left,thresholds.right)
 cap.release()

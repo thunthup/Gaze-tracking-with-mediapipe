@@ -1,5 +1,5 @@
 class ThresholdValue():
-    def __init__(self,left=7.3,right=6.7,upper= 3.08,lower=2.55):
+    def __init__(self,left=7.3,right=6.7,upper= 3,lower=2.55):
         self.left = left
         self.right = right
         self.upper =  upper
@@ -22,6 +22,16 @@ class ThresholdValue():
         self.ratioList = ratioList
         averageLeft = (ratioList[0][0] + ratioList[3][0] + ratioList[7][0])/3
         averageRight = (ratioList[2][0] + ratioList[5][0] + ratioList[8][0])/3
+        averageMidX = (ratioList[1][0] + ratioList[4][0] + ratioList[6][0])/3
+        averageTop = (ratioList[0][1] + ratioList[1][1] + ratioList[2][1])/3
+        averageBottom = (ratioList[3][1] + ratioList[4][1] + ratioList[5][1])/3
+        averageMidY = (ratioList[6][1] + ratioList[7][1] + ratioList[8][1])/3
+        
+        self.left = (averageMidX + averageLeft)/2
+        self.right = (averageMidX + averageRight)/2
+        self.upper = (averageMidY + averageTop)/2
+        self.lower = (averageMidY + averageBottom)/2
+        
         
         
     def xRatioToText(self,xRatio):
