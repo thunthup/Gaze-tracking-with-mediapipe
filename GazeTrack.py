@@ -1,18 +1,22 @@
 import cv2
 import mediapipe as mp
-
-from util import calDist, getXRatio, getYRatio
+from util import calDist, getXRatio, getYRatio, getYTiltRatio, getXTiltRatio
+from ThresholdValue import ThresholdValue
 
 mp_drawing = mp.solutions.drawing_utils
 mp_drawing_styles = mp.solutions.drawing_styles
 mp_face_mesh = mp.solutions.face_mesh
 
+thresholds = ThresholdValue()
 
-
-
-
-
-
+def calibrate():
+    #look at top left
+    RatioList = []
+    cv2.waitKey(0)
+    RatioList.append([getXRatio(),getYRatio()])
+    
+    
+    
 drawing_spec = mp_drawing.DrawingSpec(thickness=1, circle_radius=1)
 cap = cv2.VideoCapture(0)
 with mp_face_mesh.FaceMesh(
@@ -61,28 +65,15 @@ with mp_face_mesh.FaceMesh(
 #             connection_drawing_spec=mp_drawing_styles
 #             .get_default_face_mesh_iris_connections_style())
 #         
+        yTiltRatio = getYTiltRatio(face_landmarks)
+        xTiltRatio = getXTiltRatio(face_landmarks)
         
-        forehead = face_landmarks.landmark[10]
-        chin = face_landmarks.landmark[152]
-        yTiltRatio = forehead.z-chin.z
-        leftCheek = face_landmarks.landmark[234]
-        rightCheek = face_landmarks.landmark[454]
-        xTiltRatio = leftCheek.z-rightCheek.z
         xRatio = getXRatio(face_landmarks)
-        if(xRatio >= 7.3):
-            xText ="left"
-        elif(7.3>xRatio> 6.7):
-            xText = "mid"
-        else:
-            xText = "right"
+        xText = thresholds.xRatioToText(xRatio)
             
         yRatio = getYRatio(face_landmarks,xText)
-        if(yRatio >= 3):
-            yText ="Top"
-        elif(3>yRatio> 2.5):
-            yText = "mid"
-        else:
-            yText = "Bottom"
+        yText = thresholds.yRatioToText(yRatio)
+        
         
         if(yTiltRatio >= 0.045):
             yTiltText ="top"
