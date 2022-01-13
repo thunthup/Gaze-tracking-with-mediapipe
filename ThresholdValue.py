@@ -1,3 +1,4 @@
+import math
 class ThresholdValue():
     def __init__(self,left=7.3,right=6.7,top= 3,bottom=2.55):
         self.left = left
@@ -10,10 +11,10 @@ class ThresholdValue():
         self.bottomL = 2.55
         self.topM = 3
         self.midM   = 0
-        self.bottomM = 2.55
+        self.bottomM = 2.75
         self.topR = 3
         self.midR   = 0
-        self.bottomR = 2.55
+        self.bottomR = 2.7
         #RatioList Index
         # 0 Top Left
         # 1 Top Mid
@@ -42,15 +43,24 @@ class ThresholdValue():
         
         
         #y calibrate v2
-        self.topL = (ratioList[0][1] + ratioList[7][1])/2
+#         self.topL = (ratioList[0][1] + ratioList[7][1])/2
+#         self.midL   = ratioList[7][1]
+#         self.bottomL = (ratioList[3][1] + ratioList[7][1])/2
+#         self.topM = (ratioList[1][1] + ratioList[6][1])/2
+#         self.midM   = ratioList[6][1]
+#         self.bottomM = (ratioList[4][1] + ratioList[6][1])/2
+#         self.topR = (ratioList[2][1] + ratioList[8][1])/2
+#         self.midR   = ratioList[8][1]
+#         self.bottomR = (ratioList[5][1] + ratioList[8][1])/2
+        self.topL = math.sqrt(ratioList[0][1]*ratioList[7][1])
         self.midL   = ratioList[7][1]
-        self.bottomL = (ratioList[3][1] + ratioList[7][1])/2
-        self.topM = (ratioList[1][1] + ratioList[6][1])/2
+        self.bottomL = math.sqrt(ratioList[3][1]*ratioList[7][1])
+        self.topM = math.sqrt(ratioList[1][1]*ratioList[6][1])
         self.midM   = ratioList[6][1]
-        self.bottomM = (ratioList[4][1] + ratioList[6][1])/2
-        self.topR = (ratioList[2][1] + ratioList[8][1])/2
+        self.bottomM = math.sqrt(ratioList[4][1]*ratioList[6][1])
+        self.topR = math.sqrt(ratioList[2][1]*ratioList[8][1])
         self.midR   = ratioList[8][1]
-        self.bottomR = (ratioList[5][1] + ratioList[8][1])/2
+        self.bottomR = math.sqrt(ratioList[5][1]*ratioList[8][1])
         
         
     def xRatioToText(self,xRatio):
