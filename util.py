@@ -34,9 +34,9 @@ def getYRatio(face_landmarks,xText):
     if xText == "left":
         leftLowerDist = (calDist(leftIris,lowerLeft1) + calDist(leftIris,lowerLeft2)/leftEyeSize)
     elif xText == "mid":
-        leftLowerDist = calDist(leftIris,lowerLeft3)/leftEyeSize *1.02
+        leftLowerDist = calDist(leftIris,lowerLeft3)/leftEyeSize 
     else:
-        leftLowerDist = (calDist(leftIris,lowerLeft4) + calDist(leftIris,lowerLeft5))/leftEyeSize/2.07
+        leftLowerDist = (calDist(leftIris,lowerLeft4) + calDist(leftIris,lowerLeft5))/leftEyeSize
     
     yLeft = leftLowerDist*10
 #     rightIris = face_landmarks.landmark[477]

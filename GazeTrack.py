@@ -1,19 +1,25 @@
 import cv2
 import mediapipe as mp
-from util import calDist, getXRatio, getYRatio, getYTiltRatio, getXTiltRatio
+from util import getXRatio, getYRatio, getYTiltRatio, getXTiltRatio
 from ThresholdValue import ThresholdValue
 import numpy as np
 import time
+
+
 mp_drawing = mp.solutions.drawing_utils
 mp_drawing_styles = mp.solutions.drawing_styles
 mp_face_mesh = mp.solutions.face_mesh
-ratioList = []
+ratioList = np.ndarray((9,30,2))
 thresholds = ThresholdValue()
 calibrating = False
 calibateStepXTextList = ["left","mid","right","left","mid","right","mid","left","right"]
-    
-    
+testWidth = 1800
+testHeight = 1000    
+circleLocations = [(30,30),(testWidth//2,30),(testWidth-30,30),(30,testHeight-25),(testWidth//2,testHeight-25),(testWidth-30,testHeight-25),(testWidth//2,testHeight//2),(30,testHeight//2),(testWidth-30,testHeight//2)]
 drawing_spec = mp_drawing.DrawingSpec(thickness=1, circle_radius=1)
+calibrateStep = 0
+valueCount = 0
+
 cap = cv2.VideoCapture(0)
 with mp_face_mesh.FaceMesh(
     max_num_faces=1,
@@ -32,7 +38,7 @@ with mp_face_mesh.FaceMesh(
     image.flags.writeable = False
     image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
     results = face_mesh.process(image)
-
+    blackScreen = np.zeros((testHeight,testWidth))
     # Draw the face mesh annotations on the image.
     image.flags.writeable = True
     image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
@@ -86,38 +92,56 @@ with mp_face_mesh.FaceMesh(
             xTiltText = "right"
         
         if not calibrating:
-            cv2.putText(image, f'X: {xText}', (20,70), cv2.FONT_HERSHEY_PLAIN,
+            cv2.putText(image, f'X: {xText,xRatio}', (20,70), cv2.FONT_HERSHEY_PLAIN,
                     2,(0,255,0),3)
-            cv2.putText(image, f'Y: {yText}', (20,100), cv2.FONT_HERSHEY_PLAIN,
+            cv2.putText(image, f'Y: {yText,yRatio}', (20,100), cv2.FONT_HERSHEY_PLAIN,
                     2,(0,255,0),3)
             cv2.putText(image, f'Y Tilt: {yTiltText}', (20,130), cv2.FONT_HERSHEY_PLAIN,
                     2,(0,255,0),3)
             cv2.putText(image, f'X Tilt: {xTiltText}', (20,160), cv2.FONT_HERSHEY_PLAIN,
                     2,(0,255,0),3)
-            
+            for i in range(9):
+                blackScreen = cv2.circle(blackScreen, circleLocations[i], 5, (255, 0, 0), 2)
             
         if calibrating:
             
-            cv2.putText(image, f'Calibrating:{len(ratioList)}', (20,70), cv2.FONT_HERSHEY_PLAIN,
+            if calibrateStep < 9:
+                
+                blackScreen = cv2.circle(blackScreen, circleLocations[calibrateStep], 5, (255, 0, 0), 2)   
+                cv2.putText(image, f'Calibrating:{calibrateStep}', (20,70), cv2.FONT_HERSHEY_PLAIN,
                     2,(0,255,0),3)
+                cv2.imshow('Calibrate Screen',blackScreen)
+                cv2.imshow('MediaPipe Face Mesh', image)
+                
+                
+                if valueCount == 0: cv2.waitKey(0)
+                if valueCount < 30:
+                    ratioList[calibrateStep,valueCount]=[getXRatio(face_landmarks),getYRatio(face_landmarks,calibateStepXTextList[calibrateStep])]
+                    valueCount = valueCount + 1
+                else:
+                    calibrateStep = calibrateStep + 1
+                    valueCount = 0
+                    
+                    
+            else:
+                calibrating = False
+                calibrateStep = 0
+                valueCount = 0
+                thresholds.calibrate(ratioList)
+                
+            
+                    
+                
+                
         
     # Flip the image horizontally for a selfie-view display.
 #     cv2.imshow('MediaPipe Face Mesh', cv2.flip(image, 1))
-    testWidth = 1280
-    testHeight = 720
-    blackScreen = np.zeros((testHeight,testWidth))
-    blackScreen = cv2.circle(blackScreen, (30,30), 5, (255, 0, 0), 2)
-    blackScreen = cv2.circle(blackScreen, (testWidth//2,30), 5, (255, 0, 0), 2)
-    blackScreen = cv2.circle(blackScreen, (testWidth-30,30), 5, (255, 0, 0), 2)
-    blackScreen = cv2.circle(blackScreen, (30,testHeight//2), 5, (255, 0, 0), 2)
-    blackScreen = cv2.circle(blackScreen, (testWidth//2,testHeight//2), 5, (255, 0, 0), 2)
-    blackScreen = cv2.circle(blackScreen, (testWidth-30,testHeight//2), 5, (255, 0, 0), 2)
-    blackScreen = cv2.circle(blackScreen, (30,testHeight-25), 5, (255, 0, 0), 2)
-    blackScreen = cv2.circle(blackScreen, (testWidth//2,testHeight-25), 5, (255, 0, 0), 2)
-    blackScreen = cv2.circle(blackScreen, (testWidth-30,testHeight-25), 5, (255, 0, 0), 2)
+    
+    
+ 
     cv2.imshow('Calibrate Screen',blackScreen)
     cv2.imshow('MediaPipe Face Mesh', image)
-    k = cv2.waitKey(1) & 0xFF
+    k = cv2.waitKey(2) & 0xFF
     if  k == ord('q'):
         print(mp_face_mesh.FACEMESH_IRISES)
         break
@@ -129,16 +153,17 @@ with mp_face_mesh.FaceMesh(
         print(face_landmarks.landmark[68])
     elif k == ord('c'):
         
-        ratioList.append([getXRatio(face_landmarks),getYRatio(face_landmarks,calibateStepXTextList[len(ratioList)])])
+       
         calibrating = True
     elif k == ord('d'):
         thresholds.calibrate(ratioList)
         print(thresholds.left,thresholds.right)
-        ratioList.clear()
+        ratioList = np.ndarray((9,30,2))
         calibrating = False
     elif k == ord('r'):
-        ratioList.clear()
+        ratioList = np.ndarray((9,30,2))
         calibrating = False
-    elif k == ord('u'):
-        print(image.shape)
+        calibrateStep = 0
+        valueCount = 0
+    
 cap.release()
