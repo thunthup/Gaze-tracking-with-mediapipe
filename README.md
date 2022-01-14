@@ -1,7 +1,7 @@
 1.install dependencies
- - mediapipe
- - numpy
- - opencv
+ - mediapipe pip install mediapipe
+ - numpy pip install numpy
+ - opencv pip install opencv-python
 
 2.run GazeTrack.py
 
