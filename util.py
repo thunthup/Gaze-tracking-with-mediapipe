@@ -10,11 +10,11 @@ def getXRatio(face_landmarks):
     insideLeft = face_landmarks.landmark[133]
     outsideLeft = face_landmarks.landmark[33]
     # calculate ratio of distance between iris and outside eye corner and inside eye corner
-    xLeftRatio = math.log(calDist(leftIris,insideLeft)/calDist(leftIris,outsideLeft)*1000)
+    xLeftRatio = (calDist(leftIris,insideLeft)/calDist(leftIris,outsideLeft)*100)
     rightIris = face_landmarks.landmark[473]
     insideRight = face_landmarks.landmark[362]
     outsideRight = face_landmarks.landmark[263]
-    xRightRatio = math.log(calDist(rightIris,outsideRight)/calDist(rightIris,insideRight)*1000)
+    xRightRatio = (calDist(rightIris,outsideRight)/calDist(rightIris,insideRight)*100)
     #find the average of both eyes
     xRatio = (xLeftRatio + xRightRatio)/2 
     return xRatio
@@ -38,7 +38,7 @@ def getYRatio(face_landmarks,xText):
     else:
         leftLowerDist = (calDist(leftIris,lowerLeft4) + calDist(leftIris,lowerLeft5))/leftEyeSize
     
-    yLeft = leftLowerDist*10
+    yLeft = leftLowerDist*100
 #     rightIris = face_landmarks.landmark[477]
 #     upperRight = face_landmarks.landmark[362]
 #     lowerRight = face_landmarks.landmark[263]
@@ -58,4 +58,4 @@ def getXTiltRatio(face_landmarks):
     xTiltRatio = leftCheek.z-rightCheek.z
     return xTiltRatio
 
-    
+

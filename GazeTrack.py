@@ -11,14 +11,16 @@ mp_drawing_styles = mp.solutions.drawing_styles
 mp_face_mesh = mp.solutions.face_mesh
 ratioList = np.ndarray((9,30,2))
 thresholds = ThresholdValue()
-calibrating = False
+calibrating = True
 calibateStepXTextList = ["left","mid","right","left","mid","right","mid","left","right"]
-testWidth = 1800
-testHeight = 1000    
+testWidth = 1920
+testHeight = 1080 
 circleLocations = [(30,30),(testWidth//2,30),(testWidth-30,30),(30,testHeight-25),(testWidth//2,testHeight-25),(testWidth-30,testHeight-25),(testWidth//2,testHeight//2),(30,testHeight//2),(testWidth-30,testHeight//2)]
 drawing_spec = mp_drawing.DrawingSpec(thickness=1, circle_radius=1)
 calibrateStep = 0
 valueCount = 0
+cv2.namedWindow("Calibrate Screen", cv2.WND_PROP_FULLSCREEN)
+cv2.setWindowProperty("Calibrate Screen",cv2.WND_PROP_FULLSCREEN,cv2.WINDOW_FULLSCREEN)
 
 cap = cv2.VideoCapture(0)
 with mp_face_mesh.FaceMesh(
@@ -76,6 +78,8 @@ with mp_face_mesh.FaceMesh(
         yRatio = getYRatio(face_landmarks,xText)
         yText = thresholds.yRatioToText(yRatio,xText)
         
+        xInt = thresholds.xRatioToInt(xRatio)
+        yInt = thresholds.yRatioToInt(yRatio,xText)
         
         if(yTiltRatio >= 0.045):
             yTiltText ="top"
@@ -96,12 +100,14 @@ with mp_face_mesh.FaceMesh(
                     2,(0,255,0),3)
             cv2.putText(image, f'Y: {yText,yRatio}', (20,100), cv2.FONT_HERSHEY_PLAIN,
                     2,(0,255,0),3)
-            cv2.putText(image, f'Y Tilt: {yTiltText}', (20,130), cv2.FONT_HERSHEY_PLAIN,
+            cv2.putText(image, f'Y Tilt: {yTiltText,yTiltRatio}', (20,130), cv2.FONT_HERSHEY_PLAIN,
                     2,(0,255,0),3)
-            cv2.putText(image, f'X Tilt: {xTiltText}', (20,160), cv2.FONT_HERSHEY_PLAIN,
+            cv2.putText(image, f'X Tilt: {xTiltText,xTiltRatio}', (20,160), cv2.FONT_HERSHEY_PLAIN,
                     2,(0,255,0),3)
             for i in range(9):
                 blackScreen = cv2.circle(blackScreen, circleLocations[i], 5, (255, 0, 0), 2)
+            blackScreen = cv2.rectangle(blackScreen, (testWidth*(1-xInt)//3,testHeight*(1-yInt)//3),\
+                                        (testWidth*(2-xInt)//3-1,testHeight*(2-yInt)//3-1), (255, 0, 0), 2)
             
         if calibrating:
             
@@ -110,13 +116,17 @@ with mp_face_mesh.FaceMesh(
                 blackScreen = cv2.circle(blackScreen, circleLocations[calibrateStep], 5, (255, 0, 0), 2)   
                 cv2.putText(image, f'Calibrating:{calibrateStep}', (20,70), cv2.FONT_HERSHEY_PLAIN,
                     2,(0,255,0),3)
+                cv2.putText(blackScreen, "Look at the white circle and press any key ..", \
+                            (testWidth//2-300,testHeight//2+30), cv2.FONT_HERSHEY_PLAIN,
+                    1.5,(255,0,0),2)
                 cv2.imshow('Calibrate Screen',blackScreen)
                 cv2.imshow('MediaPipe Face Mesh', image)
-                
+                time.sleep(0.008)
                 
                 if valueCount == 0: cv2.waitKey(0)
                 if valueCount < 30:
-                    ratioList[calibrateStep,valueCount]=[getXRatio(face_landmarks),getYRatio(face_landmarks,calibateStepXTextList[calibrateStep])]
+                    ratioList[calibrateStep,valueCount]=[getXRatio(face_landmarks),\
+                                                         getYRatio(face_landmarks,calibateStepXTextList[calibrateStep])]
                     valueCount = valueCount + 1
                 else:
                     calibrateStep = calibrateStep + 1
@@ -158,8 +168,7 @@ with mp_face_mesh.FaceMesh(
     elif k == ord('d'):
         thresholds.calibrate(ratioList)
         print(thresholds.left,thresholds.right)
-        ratioList = np.ndarray((9,30,2))
-        calibrating = False
+        
     elif k == ord('r'):
         ratioList = np.ndarray((9,30,2))
         calibrating = False
@@ -167,3 +176,4 @@ with mp_face_mesh.FaceMesh(
         valueCount = 0
     
 cap.release()
+cv2.destroyAllWindows()

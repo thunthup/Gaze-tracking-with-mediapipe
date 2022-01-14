@@ -58,6 +58,15 @@ class ThresholdValue():
             xText = "right"
         return xText
     
+    def xRatioToInt(self,xRatio):
+        if(xRatio >= self.left):
+            xInt =1
+        elif(self.left > xRatio > self.right):
+            xInt = 0
+        else:
+            xInt = -1
+        return xInt
+    
     def yRatioToText(self,yRatio,xText):
         
         if xText == "left":
@@ -78,5 +87,23 @@ class ThresholdValue():
             yText = "Bottom"
         return yText
         
+    def yRatioToInt(self,yRatio,xText):
+        if xText == "left":
+            topThres = self.topL
+            bottomThres = self.bottomL
+        elif xText == "mid":
+            topThres = self.topM
+            bottomThres = self.bottomM
+        elif xText == "right":
+            topThres = self.topR
+            bottomThres = self.bottomR
+            
+        if(yRatio >= topThres):
+            yInt = 1
+        elif(topThres>yRatio> bottomThres):
+            yInt = 0
+        else:
+            yInt = -1
+        return yInt
         
         
