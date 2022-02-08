@@ -1,7 +1,4 @@
 import math
-import cv2
-import ThresholdValue
-import copy
 
 
 def calDist(lm1, lm2):
@@ -90,15 +87,16 @@ def getYRatio2(face_landmarks):
 
 
 def getSectionFromXY(X, Y, div, width=1920, height=1080):
-    xBorders = [(0 + width*e//div) for e in range(div)]
-    yBorders = [(0 + height*e//div) for e in range(div)]
+    divx, divy = div
+    xBorders = [(0 + width*e//divx) for e in range(divx)]
+    yBorders = [(0 + height*e//divy) for e in range(divy)]
     xSection = 0
     ySection = 0
-    for idx in range(div-1, -1, -1):
+    for idx in range(divx-1, -1, -1):
         if X > xBorders[idx]:
             xSection = idx
             break
-    for idx in range(div-1, -1, -1):
+    for idx in range(divy-1, -1, -1):
         if Y > yBorders[idx]:
             ySection = idx
             break
@@ -106,7 +104,8 @@ def getSectionFromXY(X, Y, div, width=1920, height=1080):
 
 
 def getMousePosFromSection(sections, div, width=1920, height=1080):
+    divx, divy = div
     xSection, ySection = sections
-    xPos = int(width*(xSection+0.5)/div)
-    yPos = int(height*(ySection+0.5)/div)
+    xPos = int(width*(xSection+0.5)/divx)
+    yPos = int(height*(ySection+0.5)/divy)
     return (xPos, yPos)

@@ -21,7 +21,7 @@ pyautogui.FAILSAFE = True
 pyautogui.PAUSE = 0
 emaXList = []
 emaYList = []
-DIV = 4
+DIV = (4,4)
 testWidth = 1920
 testHeight = 1080
 moveCursor = 0
@@ -137,8 +137,8 @@ with mp_face_mesh.FaceMesh(
                         sections, DIV)
                     if moveCursor:
                         pyautogui.moveTo(xMousePos, yMousePos, duration=0)
-                for i in range(DIV):
-                    for j in range(DIV):
+                for i in range(DIV[0]):
+                    for j in range(DIV[1]):
                         blackScreen = cv2.circle(
                             blackScreen, getMousePosFromSection((i, j), DIV), 5, (0, 0, 0), 2)
 
