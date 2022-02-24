@@ -3,12 +3,13 @@ import mediapipe as mp
 from util import getSectionFromXY, getXRatio, getYRatio, getYTiltRatio, getXTiltRatio, getYRatio2, getMousePosFromSection
 from sklearn.preprocessing import PolynomialFeatures
 import numpy as np
-
+import time
 import matplotlib as mpl
 from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.pyplot as plt
 from sklearn import linear_model
 import pyautogui
+
 mp_drawing = mp.solutions.drawing_utils
 mp_drawing_styles = mp.solutions.drawing_styles
 mp_face_mesh = mp.solutions.face_mesh
@@ -21,29 +22,26 @@ pyautogui.FAILSAFE = True
 pyautogui.PAUSE = 0
 emaXList = []
 emaYList = []
-DIV = (4,4)
+sleeping = 0
+DIV = (4, 4)
 testWidth = 1920
 testHeight = 1080
 moveCursor = 0
 drawing_spec = mp_drawing.DrawingSpec(thickness=1, circle_radius=1)
-
+calibrating = 0
 fitted = 0
 xEstimator = linear_model.LinearRegression()
 yEstimator = linear_model.LinearRegression()
 poly = PolynomialFeatures(degree=2)
 
 
-def click_event(event, x, y, flags, param):
-    if event == cv2.EVENT_LBUTTONDOWN:
-        # print(x,y,xRatio,yRatio)
-        ratioList.append([xRatio, yRatio, 1, yRatio2])
-        xRatioList.append(xRatio)
-        yRatioList.append(yRatio)
-        yList.append(y)
-        xList.append(x)
+def add_data(x, y):
 
-    if event == cv2.EVENT_RBUTTONDOWN:
-        pass
+    ratioList.append([xRatio, yRatio, 1, yRatio2])
+    xRatioList.append(xRatio)
+    yRatioList.append(yRatio)
+    yList.append(y)
+    xList.append(x)
 
 
 cv2.namedWindow("Calibrate Screen", cv2.WND_PROP_FULLSCREEN)
@@ -137,20 +135,55 @@ with mp_face_mesh.FaceMesh(
                         sections, DIV)
                     if moveCursor:
                         pyautogui.moveTo(xMousePos, yMousePos, duration=0)
-                for i in range(DIV[0]):
-                    for j in range(DIV[1]):
-                        blackScreen = cv2.circle(
-                            blackScreen, getMousePosFromSection((i, j), DIV), 5, (0, 0, 0), 2)
-
+                if not calibrating:
+                    for i in range(DIV[0]):
+                        for j in range(DIV[1]):
+                            blackScreen = cv2.circle(
+                                blackScreen, getMousePosFromSection((i, j), DIV), 5, (0, 0, 0), 2)
+                if calibrating:
+                    if calibrateCounterJ < 4:
+                        if calibrateCounterI < 4:
+                            calibratingPoint = getMousePosFromSection(
+                                (calibrateCounterI, calibrateCounterJ), DIV)
+                            blackScreen = cv2.circle(
+                                blackScreen, calibratingPoint, 8, (0, 0, 0), 2)
+                            cv2.circle(
+                                blackScreen, calibratingPoint, 20, (189, 255, 201), 10)
+                            cv2.imshow('Calibrate Screen', blackScreen)
+                            ratioList.append([xRatio, yRatio, 1, yRatio2])
+                            xRatioList.append(xRatio)
+                            yRatioList.append(yRatio)
+                            yList.append(calibratingPoint[1])
+                            xList.append(calibratingPoint[0])
+                        if calibrateRep < 60:
+                            calibrateRep = calibrateRep + 1
+                        elif calibrateRep == 60:
+                            calibrateRep = 0
+                            blackScreen = np.ones((testHeight, testWidth))
+                            cv2.imshow('Calibrate Screen', blackScreen)
+                            sleeping = 1
+                            if calibrateCounterI < 3:
+                                calibrateCounterI = calibrateCounterI + 1
+                            elif calibrateCounterI == 3:
+                                calibrateCounterI = 0
+                                calibrateCounterJ = calibrateCounterJ + 1
+                    else:
+                        calbrating = 0
+                        polyVariables = poly.fit_transform(ratioList)
+                        xEstimator.fit(polyVariables, xList)
+                        yEstimator.fit(polyVariables, yList)
+                        fitted = 1
                     # Flip the image horizontally for a selfie-view display.
                     #     cv2.imshow('MediaPipe Face Mesh', cv2.flip(image, 1))
-
+        if sleeping:
+            time.sleep(1)
+            sleeping = 0
         cv2.imshow('Calibrate Screen', blackScreen)
         cv2.imshow('MediaPipe Face Mesh', image)
-        cv2.setMouseCallback("Calibrate Screen", click_event)
+
         k = cv2.waitKey(2) & 0xFF
         if k == ord('q'):
-            print(mp_face_mesh.FACEMESH_IRISES)
+            # print(mp_face_mesh.FACEMESH_IRISES)
             break
 
         elif k == ord('a'):
@@ -193,19 +226,15 @@ with mp_face_mesh.FaceMesh(
 
             plt.show()
         elif k == ord('c'):
-            polyVariables = poly.fit_transform(ratioList)
-            xEstimator.fit(polyVariables, xList)
-            yEstimator.fit(polyVariables, yList)
-            fitted = 1
-            moveCursor = 1
+            calibrating = 1
+            calibrateCounterI = 0
+            calibrateCounterJ = 0
+            calibrateRep = 0
         elif k == ord('d'):
             moveCursor = not moveCursor
 
         elif k == ord('r'):
-            ratioList = np.ndarray((9, 30, 2))
-            calibrating = False
-            calibrateStep = 0
-            valueCount = 0
+            pass
 
 cap.release()
 cv2.destroyAllWindows()
