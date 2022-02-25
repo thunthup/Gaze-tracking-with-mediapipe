@@ -37,7 +37,7 @@ poly = PolynomialFeatures(degree=2)
 
 def add_data(x, y):
 
-    ratioList.append([xRatio, yRatio, 1, yRatio2])
+    ratioList.append([xRatio, yRatio, yRatio2])
     xRatioList.append(xRatio)
     yRatioList.append(yRatio)
     yList.append(y)
@@ -108,7 +108,7 @@ with mp_face_mesh.FaceMesh(
                             2, (0, 255, 0), 3)
                 if fitted:
                     polyVariablesTemp = poly.fit_transform(
-                        [[xRatio, yRatio, 1, yRatio2]])
+                        [[xRatio, yRatio,  yRatio2]])
                     xCursorTemp = int(xEstimator.predict(polyVariablesTemp)[0])
                     yCursorTemp = int(yEstimator.predict(polyVariablesTemp)[0])
                     if xCursorTemp < 0:
@@ -143,6 +143,8 @@ with mp_face_mesh.FaceMesh(
                 if calibrating:
                     if calibrateCounterJ < 4:
                         if calibrateCounterI < 4:
+                            if calibrateRep == 0:
+                                time.sleep(0.5)
                             calibratingPoint = getMousePosFromSection(
                                 (calibrateCounterI, calibrateCounterJ), DIV)
                             blackScreen = cv2.circle(
@@ -150,25 +152,22 @@ with mp_face_mesh.FaceMesh(
                             cv2.circle(
                                 blackScreen, calibratingPoint, 20, (189, 255, 201), 10)
                             cv2.imshow('Calibrate Screen', blackScreen)
-                            ratioList.append([xRatio, yRatio, 1, yRatio2])
-                            xRatioList.append(xRatio)
-                            yRatioList.append(yRatio)
-                            yList.append(calibratingPoint[1])
-                            xList.append(calibratingPoint[0])
-                        if calibrateRep < 60:
+                            add_data(calibratingPoint[0], calibratingPoint[1])
+
+                        if calibrateRep < 130:
                             calibrateRep = calibrateRep + 1
-                        elif calibrateRep == 60:
+                        elif calibrateRep == 130:
                             calibrateRep = 0
                             blackScreen = np.ones((testHeight, testWidth))
                             cv2.imshow('Calibrate Screen', blackScreen)
-                            sleeping = 1
+                            #sleeping = 1
                             if calibrateCounterI < 3:
                                 calibrateCounterI = calibrateCounterI + 1
                             elif calibrateCounterI == 3:
                                 calibrateCounterI = 0
                                 calibrateCounterJ = calibrateCounterJ + 1
                     else:
-                        calbrating = 0
+                        calibrating = 0
                         polyVariables = poly.fit_transform(ratioList)
                         xEstimator.fit(polyVariables, xList)
                         yEstimator.fit(polyVariables, yList)
@@ -177,7 +176,8 @@ with mp_face_mesh.FaceMesh(
                     #     cv2.imshow('MediaPipe Face Mesh', cv2.flip(image, 1))
         if sleeping:
             time.sleep(1)
-            sleeping = 0
+            sleeping = sleeping - 1
+            blackScreen = np.ones((testHeight, testWidth))
         cv2.imshow('Calibrate Screen', blackScreen)
         cv2.imshow('MediaPipe Face Mesh', image)
 
