@@ -1,13 +1,16 @@
 1.install dependencies from requirements.txt
+"pip install -r requirements.txt"
 
-2.run polynomial.py
+2.hardware setup ,tested with lower middle webcam
 
-3.put your cursor on a black circle, look at your cursor, click about 5-10 times while looking at your cursor
+3.run polynomial.py, if the program detect a face, you should see 4 \* 4 circle
 
-4.repeat for all the circles
+3.press 'c' to start calibrating. after calibrating, you should see a black circle predicting where you are looking.
 
-5.press "c" to calibrate and let the program control your cursor
+4.press 'd' to toggle the program control of your cursor
 
-6.press "d" to toggle your mouse control
+5.go to https://eye-track-test.herokuapp.com/ and press F11 to go full screen
 
-"Keep your head still"
+6.play through the test and cature the result screen
+
+ps. try to keep your head still during the process, thank you for testing
