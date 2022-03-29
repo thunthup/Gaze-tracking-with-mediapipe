@@ -48,7 +48,7 @@ cv2.namedWindow("Calibrate Screen", cv2.WND_PROP_FULLSCREEN)
 cv2.setWindowProperty("Calibrate Screen",
                       cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
 
-cap = cv2.VideoCapture(0)
+cap = cv2.VideoCapture(1)
 with mp_face_mesh.FaceMesh(
         max_num_faces=1,
         refine_landmarks=True,
