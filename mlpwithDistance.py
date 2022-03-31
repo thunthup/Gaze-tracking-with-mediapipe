@@ -11,6 +11,7 @@ from sklearn import linear_model
 import pyautogui
 from sklearn.neural_network import MLPRegressor
 from sklearn.preprocessing import StandardScaler
+from sklearn.model_selection import train_test_split
 mp_drawing = mp.solutions.drawing_utils
 mp_drawing_styles = mp.solutions.drawing_styles
 mp_face_mesh = mp.solutions.face_mesh
@@ -25,6 +26,7 @@ emaXList = []
 emaYList = []
 sleeping = 0
 DIV = (4, 4)
+CalibrateDIV = (5,5)
 testWidth = 1920
 testHeight = 1080
 moveCursor = 0
@@ -32,9 +34,9 @@ drawing_spec = mp_drawing.DrawingSpec(thickness=1, circle_radius=1)
 calibrating = 0
 fitted = 0
 xEstimator = MLPRegressor(max_iter=500000,
-                          hidden_layer_sizes=(3, ),random_state=1)
+                          hidden_layer_sizes=(3, ),random_state=1,early_stopping=True,n_iter_no_change=40)
 yEstimator = MLPRegressor(max_iter=500000,
-                          hidden_layer_sizes=(3, ),random_state=1)
+                          hidden_layer_sizes=(3, ),random_state=1,early_stopping=True,n_iter_no_change=40)
 poly = PolynomialFeatures(degree=1)
 scaler = StandardScaler()
 
@@ -146,12 +148,12 @@ with mp_face_mesh.FaceMesh(
                             blackScreen = cv2.circle(
                                 blackScreen, getMousePosFromSection((i, j), DIV), 5, (0, 0, 0), 2)
                 if calibrating:
-                    if calibrateCounterJ < 4:
-                        if calibrateCounterI < 4:
+                    if calibrateCounterJ < CalibrateDIV[0] :
+                        if calibrateCounterI < CalibrateDIV [1]:
                             if calibrateRep == 0:
                                 time.sleep(0.5)
                             calibratingPoint = getMousePosFromSection(
-                                (calibrateCounterI, calibrateCounterJ), DIV)
+                                (calibrateCounterI, calibrateCounterJ), CalibrateDIV )
                             blackScreen = cv2.circle(
                                 blackScreen, calibratingPoint, 8, (0, 0, 0), 2)
                             cv2.circle(
@@ -166,9 +168,9 @@ with mp_face_mesh.FaceMesh(
                             blackScreen = np.ones((testHeight, testWidth))
                             cv2.imshow('Calibrate Screen', blackScreen)
                             #sleeping = 1
-                            if calibrateCounterI < 3:
+                            if calibrateCounterI < CalibrateDIV[1]-1 :
                                 calibrateCounterI = calibrateCounterI + 1
-                            elif calibrateCounterI == 3:
+                            elif calibrateCounterI == CalibrateDIV[1]-1 :
                                 calibrateCounterI = 0
                                 calibrateCounterJ = calibrateCounterJ + 1
                     else:
@@ -176,8 +178,11 @@ with mp_face_mesh.FaceMesh(
                         
                         polyVariables = poly.fit_transform(ratioList)
                         scaledData = scaler.fit_transform(polyVariables)
+                        
                         xEstimator.fit(scaledData, xList)
                         yEstimator.fit(scaledData, yList)
+                        print(xEstimator.score(scaledData, xList))
+                        print(yEstimator.score(scaledData, yList))
                         fitted = 1
                     # Flip the image horizontally for a selfie-view display.
                     #     cv2.imshow('MediaPipe Face Mesh', cv2.flip(image, 1))
