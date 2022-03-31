@@ -1,4 +1,5 @@
 import math
+import numpy as np
 
 
 def calDist(lm1, lm2):
@@ -17,12 +18,12 @@ def getXRatio(face_landmarks):
     outsideLeft = face_landmarks.landmark[33]
     # calculate ratio of distance between iris and outside eye corner and inside eye corner
     xLeftRatio = (calDist(leftIris, insideLeft) /
-                  calDist(leftIris, outsideLeft)*100)
+                  calDist(leftIris, outsideLeft)*10)
     rightIris = face_landmarks.landmark[473]
     insideRight = face_landmarks.landmark[362]
     outsideRight = face_landmarks.landmark[263]
     xRightRatio = (calDist(rightIris, outsideRight) /
-                   calDist(rightIris, insideRight)*100)
+                   calDist(rightIris, insideRight)*10)
     # find the average of both eyes
     xRatio = (xLeftRatio + xRightRatio)/2
     return xRatio
@@ -73,7 +74,7 @@ def getYRatio(face_landmarks):
         + calDist(leftIris, face_landmarks.landmark[163]) \
         + calDist(leftIris, face_landmarks.landmark[154])\
         + calDist(leftIris, face_landmarks.landmark[155])
-    return yRatio/leftEyeSize
+    return yRatio/leftEyeSize*10
 
 
 def getYRatio2(face_landmarks):
@@ -109,3 +110,37 @@ def getMousePosFromSection(sections, div, width=1920, height=1080):
     xPos = int(width*(xSection+0.5)/divx)
     yPos = int(height*(ySection+0.5)/divy)
     return (xPos, yPos)
+
+
+def extractPoints(face_landmarks):
+    extractedPoints = [[float(e.x), float(e.y), float(e.z)]
+                       for e in face_landmarks.landmark[468:478]]
+    pointsToExtract = [133, 33, 362, 263, 10,
+                       152, 234, 454, 7, 163, 154, 155, 145]
+    for point in pointsToExtract:
+        extractedPoints.append([float(face_landmarks.landmark[point].x), float(
+            face_landmarks.landmark[point].y), float(face_landmarks.landmark[point].z)])
+    extractedPoints = np.array(extractedPoints)
+
+    return extractedPoints.flatten()
+
+
+def extractDist(face_landmarks):
+    landmark = face_landmarks.landmark
+    leftIris = landmark[468]
+    leftToExtract = [33,246,161,160,159,158,157,173,133,7,163,144,145,153,154,155]
+    eyeData = []
+    for i in leftToExtract:
+        eyeData.append(calDist(leftIris,landmark[i]))
+    # eyeData.append(calDist(landmark[161],landmark[163]))
+    # eyeData.append(calDist(landmark[160],landmark[144]))
+    # eyeData.append(calDist(landmark[159],landmark[145]))
+    # eyeData.append(calDist(landmark[158],landmark[153]))
+    # eyeData.append(calDist(landmark[157],landmark[154]))
+    # eyeData.append(calDist(landmark[173],landmark[155]))
+    
+    rightIris = landmark[473]
+    rightToExtract = [362,398,384,385,386,387,388,466,263,259,390,373,374,380,381,382]
+    for i in rightToExtract:
+        eyeData.append(calDist(rightIris,landmark[i]))
+   
