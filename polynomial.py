@@ -107,7 +107,7 @@ with mp_face_mesh.FaceMesh(
                 cv2.putText(image, f'Yr: {yRatio}', (20, 100), cv2.FONT_HERSHEY_PLAIN,
                             2, (0, 255, 0), 3)
                 if fitted:
-                    polyVariablesTemp = poly.fit_transform(
+                    polyVariablesTemp = poly.transform(
                         [[xRatio, yRatio,  yRatio2]])
                     xCursorTemp = int(xEstimator.predict(polyVariablesTemp)[0])
                     yCursorTemp = int(yEstimator.predict(polyVariablesTemp)[0])
