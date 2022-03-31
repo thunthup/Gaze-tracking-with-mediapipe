@@ -1,6 +1,6 @@
 import cv2
 import mediapipe as mp
-from util import getSectionFromXY, getXRatio, getYRatio, getYTiltRatio, getXTiltRatio, getYRatio2, getMousePosFromSection
+from util import getSectionFromXY, getXRatio, getYRatio, getYTiltRatio, getXTiltRatio, getYRatio2, getMousePosFromSection, extractDistances
 from sklearn.preprocessing import PolynomialFeatures
 import numpy as np
 import time
@@ -10,6 +10,7 @@ import matplotlib.pyplot as plt
 from sklearn import linear_model
 import pyautogui
 from sklearn.neural_network import MLPRegressor
+from sklearn.preprocessing import StandardScaler
 mp_drawing = mp.solutions.drawing_utils
 mp_drawing_styles = mp.solutions.drawing_styles
 mp_face_mesh = mp.solutions.face_mesh
@@ -31,15 +32,15 @@ drawing_spec = mp_drawing.DrawingSpec(thickness=1, circle_radius=1)
 calibrating = 0
 fitted = 0
 xEstimator = MLPRegressor(max_iter=500000,
-                          hidden_layer_sizes=(4, ),)
+                          hidden_layer_sizes=(3, ),random_state=1)
 yEstimator = MLPRegressor(max_iter=500000,
-                          hidden_layer_sizes=(4, ),)
-poly = PolynomialFeatures(degree=2)
-
+                          hidden_layer_sizes=(3, ),random_state=1)
+poly = PolynomialFeatures(degree=1)
+scaler = StandardScaler()
 
 def add_data(x, y):
 
-    ratioList.append([xRatio, yRatio, yRatio2])
+    ratioList.append(extractedDists)
     xRatioList.append(xRatio)
     yRatioList.append(yRatio)
     yList.append(y)
@@ -101,6 +102,7 @@ with mp_face_mesh.FaceMesh(
                 xRatio = getXRatio(face_landmarks)
                 yRatio = getYRatio(face_landmarks)
                 yRatio2 = getYRatio2(face_landmarks)
+                extractedDists = extractDistances(face_landmarks)   
                 #xTiltRatio = getXTiltRatio(face_landmarks)
                 #yTiltRatio = getYTiltRatio(face_landmarks)
 
@@ -109,10 +111,11 @@ with mp_face_mesh.FaceMesh(
                 cv2.putText(image, f'Yr: {yRatio}', (20, 100), cv2.FONT_HERSHEY_PLAIN,
                             2, (0, 255, 0), 3)
                 if fitted:
-                    polyVariablesTemp = poly.fit_transform(
-                        [[xRatio, yRatio,  yRatio2]])
-                    xCursorTemp = int(xEstimator.predict(polyVariablesTemp))
-                    yCursorTemp = int(yEstimator.predict(polyVariablesTemp))
+                    polyVariablesTemp = poly.transform(
+                        [extractedDists])
+                    scaledLiveData = scaler.transform(polyVariablesTemp)
+                    xCursorTemp = int(xEstimator.predict(scaledLiveData))
+                    yCursorTemp = int(yEstimator.predict(scaledLiveData))
                     if xCursorTemp < 0:
                         xCursorTemp = 0
                     if xCursorTemp > 1915:
@@ -170,9 +173,11 @@ with mp_face_mesh.FaceMesh(
                                 calibrateCounterJ = calibrateCounterJ + 1
                     else:
                         calibrating = 0
+                        
                         polyVariables = poly.fit_transform(ratioList)
-                        xEstimator.fit(polyVariables, xList)
-                        yEstimator.fit(polyVariables, yList)
+                        scaledData = scaler.fit_transform(polyVariables)
+                        xEstimator.fit(scaledData, xList)
+                        yEstimator.fit(scaledData, yList)
                         fitted = 1
                     # Flip the image horizontally for a selfie-view display.
                     #     cv2.imshow('MediaPipe Face Mesh', cv2.flip(image, 1))
