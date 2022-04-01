@@ -3,7 +3,7 @@
 
 2.hardware setup ,tested with lower middle webcam
 
-3.run polynomial.py, if the program detect a face, you should see 4 \* 4 circle
+3.run polynomial.py to use polynomial regression, or mlpWithDistances.py to use mlpRegressor if the program detect a face, you should see a grid of circles
 
 3.press 'c' to start calibrating. after calibrating, you should see a black circle predicting where you are looking.
 
