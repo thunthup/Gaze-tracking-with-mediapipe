@@ -125,22 +125,28 @@ def extractPoints(face_landmarks):
     return extractedPoints.flatten()
 
 
-def extractDist(face_landmarks):
+def extractDistances(face_landmarks):
     landmark = face_landmarks.landmark
     leftIris = landmark[468]
     leftToExtract = [33,246,161,160,159,158,157,173,133,7,163,144,145,153,154,155]
+    insideLeft = landmark[133]
+    outsideLeft = landmark[33]
+    leftEyeSize = calDist(insideLeft, outsideLeft)
     eyeData = []
     for i in leftToExtract:
-        eyeData.append(calDist(leftIris,landmark[i]))
+        eyeData.append(calDist(leftIris,landmark[i])/leftEyeSize)
     # eyeData.append(calDist(landmark[161],landmark[163]))
     # eyeData.append(calDist(landmark[160],landmark[144]))
-    # eyeData.append(calDist(landmark[159],landmark[145]))
+    #eyeData.append(calDist(landmark[159],landmark[145])/leftEyeSize)
     # eyeData.append(calDist(landmark[158],landmark[153]))
     # eyeData.append(calDist(landmark[157],landmark[154]))
     # eyeData.append(calDist(landmark[173],landmark[155]))
-    
+    insideRight = landmark[362]
+    outsideRight = landmark[263]
     rightIris = landmark[473]
+    rightEyeSize = calDist(insideRight, outsideRight)
     rightToExtract = [362,398,384,385,386,387,388,466,263,259,390,373,374,380,381,382]
     for i in rightToExtract:
-        eyeData.append(calDist(rightIris,landmark[i]))
-   
+        eyeData.append(calDist(rightIris,landmark[i])/rightEyeSize)
+    
+    return eyeData
