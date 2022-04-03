@@ -29,6 +29,8 @@ DIV = (4, 4)
 CalibrateDIV = (5,5)
 testWidth = 1920
 testHeight = 1080
+testWidth = int(input("enter Width:"))
+testHeight = int(input("enter Height"))
 moveCursor = 0
 drawing_spec = mp_drawing.DrawingSpec(thickness=1, circle_radius=1)
 calibrating = 0
@@ -36,7 +38,7 @@ fitted = 0
 xEstimator = MLPRegressor(max_iter=500000,
                           hidden_layer_sizes=(3, ),random_state=1,early_stopping=True,n_iter_no_change=40)
 yEstimator = MLPRegressor(max_iter=500000,
-                          hidden_layer_sizes=(3, ),random_state=1,early_stopping=True,n_iter_no_change=40)
+                          hidden_layer_sizes=(4, ),random_state=1,early_stopping=True,n_iter_no_change=40)
 poly = PolynomialFeatures(degree=1)
 scaler = StandardScaler()
 
@@ -120,40 +122,40 @@ with mp_face_mesh.FaceMesh(
                     yCursorTemp = int(yEstimator.predict(scaledLiveData))
                     if xCursorTemp < 0:
                         xCursorTemp = 0
-                    if xCursorTemp > 1915:
-                        xCursorTemp = 1915
+                    if xCursorTemp > testWidth-5:
+                        xCursorTemp = testWidth - 5
                     if yCursorTemp < 0:
                         yCursorTemp = 0
-                    if yCursorTemp > 1075:
-                        yCursorTemp = 1075
+                    if yCursorTemp > testHeight-5:
+                        yCursorTemp = testHeight-5
 
                     emaXList.append(xCursorTemp)
                     emaYList.append(yCursorTemp)
-                    if(len(emaXList) > 25):
+                    if(len(emaXList) > 40):
                         emaXList.pop(0)
-                    if(len(emaYList) > 25):
+                    if(len(emaYList) > 40):
                         emaYList.pop(0)
                     xPredict = int(np.mean(emaXList))
                     yPredict = int(np.mean(emaYList))
                     blackScreen = cv2.circle(
                         blackScreen, (xPredict, yPredict), 5, (0, 0, 0), 2)
-                    sections = getSectionFromXY(xPredict, yPredict, DIV)
+                    sections = getSectionFromXY(xPredict, yPredict, DIV,testWidth,testHeight)
                     xMousePos, yMousePos = getMousePosFromSection(
-                        sections, DIV)
+                        sections, DIV,testWidth, testHeight)
                     if moveCursor:
                         pyautogui.moveTo(xMousePos, yMousePos, duration=0)
                 if not calibrating:
                     for i in range(DIV[0]):
                         for j in range(DIV[1]):
                             blackScreen = cv2.circle(
-                                blackScreen, getMousePosFromSection((i, j), DIV), 5, (0, 0, 0), 2)
+                                blackScreen, getMousePosFromSection((i, j), DIV, testWidth , testHeight), 5, (0, 0, 0), 2)
                 if calibrating:
                     if calibrateCounterJ < CalibrateDIV[0] :
                         if calibrateCounterI < CalibrateDIV [1]:
                             if calibrateRep == 0:
                                 time.sleep(0.5)
                             calibratingPoint = getMousePosFromSection(
-                                (calibrateCounterI, calibrateCounterJ), CalibrateDIV )
+                                (calibrateCounterI, calibrateCounterJ), CalibrateDIV , testWidth , testHeight)
                             blackScreen = cv2.circle(
                                 blackScreen, calibratingPoint, 8, (0, 0, 0), 2)
                             cv2.circle(
@@ -161,9 +163,9 @@ with mp_face_mesh.FaceMesh(
                             cv2.imshow('Calibrate Screen', blackScreen)
                             add_data(calibratingPoint[0], calibratingPoint[1])
 
-                        if calibrateRep < 130:
+                        if calibrateRep < 100:
                             calibrateRep = calibrateRep + 1
-                        elif calibrateRep == 130:
+                        elif calibrateRep == 100:
                             calibrateRep = 0
                             blackScreen = np.ones((testHeight, testWidth))
                             cv2.imshow('Calibrate Screen', blackScreen)

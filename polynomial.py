@@ -26,6 +26,8 @@ sleeping = 0
 DIV = (4, 4)
 testWidth = 1920
 testHeight = 1080
+testWidth = int(input("enter Width:"))
+testHeight = int(input("enter Height"))
 moveCursor = 0
 drawing_spec = mp_drawing.DrawingSpec(thickness=1, circle_radius=1)
 calibrating = 0
@@ -130,23 +132,23 @@ with mp_face_mesh.FaceMesh(
                     yPredict = int(np.mean(emaYList))
                     blackScreen = cv2.circle(
                         blackScreen, (xPredict, yPredict), 5, (0, 0, 0), 2)
-                    sections = getSectionFromXY(xPredict, yPredict, DIV)
+                    sections = getSectionFromXY(xPredict, yPredict, DIV, testWidth , testHeight)
                     xMousePos, yMousePos = getMousePosFromSection(
-                        sections, DIV)
+                        sections, DIV, testWidth , testHeight)
                     if moveCursor:
                         pyautogui.moveTo(xMousePos, yMousePos, duration=0)
                 if not calibrating:
                     for i in range(DIV[0]):
                         for j in range(DIV[1]):
                             blackScreen = cv2.circle(
-                                blackScreen, getMousePosFromSection((i, j), DIV), 5, (0, 0, 0), 2)
+                                blackScreen, getMousePosFromSection((i, j), DIV, testWidth , testHeight), 5, (0, 0, 0), 2)
                 if calibrating:
                     if calibrateCounterJ < 4:
                         if calibrateCounterI < 4:
                             if calibrateRep == 0:
                                 time.sleep(0.5)
                             calibratingPoint = getMousePosFromSection(
-                                (calibrateCounterI, calibrateCounterJ), DIV)
+                                (calibrateCounterI, calibrateCounterJ), DIV, testWidth , testHeight)
                             blackScreen = cv2.circle(
                                 blackScreen, calibratingPoint, 8, (0, 0, 0), 2)
                             cv2.circle(
